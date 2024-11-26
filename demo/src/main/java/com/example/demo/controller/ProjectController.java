@@ -15,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @Log4j2
@@ -47,7 +48,52 @@ public class ProjectController {
     }
 
     @GetMapping("/list")
-    public PageResponseDTO<ProjectDTO> list(PageRequestDTO pageRequestDTO){
+    public PageResponseDTO<ProjectDTO> list(PageRequestDTO pageRequestDTO) {
         return projectService.getList(pageRequestDTO);
+    }
+
+    @GetMapping("/{pno}")
+    public ProjectDTO read(@PathVariable("pno") Long pno) {
+
+        return projectService.get(pno);
+    }
+
+    @PutMapping("/{pno}")
+    public Map<String, String> modify(@PathVariable Long pno, ProjectDTO projectDTO) {
+        projectDTO.setPno(pno);
+
+        //기존
+        ProjectDTO oldProjectDTO = projectService.get(pno);
+
+        //파일 업로드
+        List<MultipartFile> files = projectDTO.getFiles();
+        List<String> currentUploadFileNames = fileUtil.saveFiles(files);
+
+        //기존 파일 유지
+        List<String> uploadedFileNames = projectDTO.getUploadFileNames();
+
+        //추가 파일이 있으면 추가해주기
+        if (currentUploadFileNames != null && !currentUploadFileNames.isEmpty()) {
+            uploadedFileNames.addAll(currentUploadFileNames);
+        }
+
+        //기존 파일중에서 삭제 된 파일 처리
+        List<String> oldFileNames = oldProjectDTO.getUploadFileNames();
+        if (oldFileNames != null && !oldFileNames.isEmpty()) {
+            List<String> removeFiles =
+                    oldFileNames.stream().filter(fileName -> uploadedFileNames.indexOf(fileName) == -1).collect(Collectors.toList());
+
+            fileUtil.deleteFiles(removeFiles);
+        }
+
+        return Map.of("RESULT", "SUCCESS");
+    }
+
+    @DeleteMapping("{pno}")
+    public Map<String, String> remove(@PathVariable Long pno){
+
+        List<String> oldFileNames = projectService.get(pno).getUploadFileNames();
+        fileUtil.deleteFiles(oldFileNames);
+        return  Map.of("RESULT", "SUCCESS");
     }
 }

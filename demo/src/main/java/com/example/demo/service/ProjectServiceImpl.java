@@ -17,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,7 +48,7 @@ public class ProjectServiceImpl implements ProjectService {
         return project;
     }
 
-    private ProjectDTO entityToDTO (Project project) {
+    private ProjectDTO entityToDTO(Project project) {
 
         ProjectDTO projectDTO = ProjectDTO.builder()
                 .pno(project.getPno())
@@ -57,12 +58,12 @@ public class ProjectServiceImpl implements ProjectService {
                 .build();
 
         List<ProjectFile> fileList = project.getFileList();
-        if(fileList.isEmpty()){
+        if (fileList.isEmpty()) {
             return projectDTO;
         }
 
         List<String> fileNameList = fileList.stream().map(projectFile ->
-            projectFile.getFileName()).toList();
+                projectFile.getFileName()).toList();
         projectDTO.setUploadFileNames(fileNameList);
         return projectDTO;
     }
@@ -118,17 +119,38 @@ public class ProjectServiceImpl implements ProjectService {
 
     @Override
     public ProjectDTO get(Long pno) {
-        return null;
+        Optional<Project> result = projectRepository.findById(pno);
+        Project project = result.orElseThrow();
+        return entityToDTO(project);
     }
 
     @Override
     public void modify(ProjectDTO projectDTO) {
+        //조회 하고 변경내용 반영 후 저장
+        Optional<Project> result = projectRepository.findById(projectDTO.getPno());
+
+        Project project = result.orElseThrow();
+
+        project.setTitle(projectDTO.getTitle());
+        project.setContent(projectDTO.getContent());
+        project.setDelFlag(projectDTO.isDelFlag());
+
+        //파일 처리
+        List<String> uploadFileNames = projectDTO.getUploadFileNames();
+        project.clearList();
+        if (!uploadFileNames.isEmpty()) {
+            uploadFileNames.forEach(uploadName -> {
+                project.addFileString(uploadName);
+            });
+        }
+
+        projectRepository.save(project);
 
     }
 
     @Override
     public void remove(Long pno) {
-
+        projectRepository.deleteById(pno);
     }
 
 }
