@@ -3,6 +3,7 @@ package com.example.demo.config;
 import com.example.demo.security.filter.JWTCheckFilter;
 import com.example.demo.security.handler.APILoginFailHandler;
 import com.example.demo.security.handler.APILoginSuccessHandler;
+import com.example.demo.security.handler.CustomAccessDeniedHandler;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -54,6 +55,10 @@ public class CustomSecurityConfig {
         http.sessionManagement((httpSecuritySessionManagementConfigurer -> {
             httpSecuritySessionManagementConfigurer.sessionCreationPolicy(SessionCreationPolicy.NEVER);
         }));
+
+        http.exceptionHandling(config -> {
+            config.accessDeniedHandler(new CustomAccessDeniedHandler());
+        });
 
         return http.build();
     }

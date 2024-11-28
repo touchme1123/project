@@ -21,12 +21,14 @@ import java.util.Map;
 public class JWTCheckFilter extends OncePerRequestFilter {
 
     @Override
+    //filter 적용 안하는 곳 설정
     protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
 
         String path = request.getRequestURI();
         return false;
     }
 
+    //spring security 필터 작동
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
@@ -34,7 +36,6 @@ public class JWTCheckFilter extends OncePerRequestFilter {
 
         //요청에서 헤더 받아오기
         String authHeaderStr = request.getHeader("Authorization");
-
 
         try {
             //Bearer accestoken...
