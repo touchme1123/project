@@ -46,12 +46,15 @@ dependencies {
     implementation 'org.modelmapper:modelmapper:3.1.1'
 
     implementation "com.querydsl:querydsl-jpa:${queryDslVersion}:jakarta"
-
-    implementation('org.springframework.boot:spring-boot-starter-web') {
-        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-security'
-    }
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     implementation group: 'net.coobird', name: 'thumbnailator', version: '0.4.19'
+
+    implementation 'com.google.code.gson:gson:2.10.1'
+
+    runtimeOnly 'io.jsonwebtoken:jjwt-impl:0.11.5'
+    implementation 'io.jsonwebtoken:jjwt-api:0.11.5'
+    runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'
 
 
     annotationProcessor(
